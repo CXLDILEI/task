@@ -1,0 +1,112 @@
+<% include ../header.ejs %>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <%include ./nav.ejs%>
+        <div class="layui-body">
+            <!-- 内容主体区域 -->
+            <div style="padding: 15px;">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                    <legend>用户管理</legend>
+                </fieldset>
+
+                <table lay-filter="demo" class="layui-hide" id="test"></table>
+
+                <script type="text/html" id="barDemo">
+                    <a class="layui-btn layui-btn-xs" lay-event="edit">更改级别</a>
+                    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除用户</a>
+                </script>
+            </div>
+        </div>
+
+    </div>
+    <script src="../public/layui/layui.js"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use(['element', 'table', 'form'], function(){
+            var element = layui.element;
+            var form = layui.form;
+            var $ = layui.$;
+            layui.use('table', function(){
+                var table = layui.table;
+
+                table.render({
+                    elem: '#test'
+                    ,url:'/admin/user',
+                    method: 'post'
+                    ,cols: [[
+                        {field:'username', width:80, title: '用户名'},
+                        {field:'level', width:80, title: '级别'},
+                        {field: 'used', title: '账号是否可用',width:100, templet: function (d) {
+                                // console.log(d); // 每一行的数据
+                                return `<input type="checkbox" name="used" value="${d._id}" lay-skin="switch" lay-text="可用|不可用" lay-filter="usedDemo" ${d.used === true ? 'checked' : ''}>`
+                            }},
+                        {field: 'tool', toolbar: '#barDemo'}
+                    ]]
+                    ,page: true
+                });
+                // 监听表格为demo 工具条
+                table.on('tool(demo)', function (obj) {
+                    if (obj.event === 'del') {
+                        layer.confirm('是否删除用户', {icon: 3, title:'提示'}, function(index){
+                            //do something
+                            $.ajax({
+                                url: '/admin/user/del',
+                                method: 'post',
+                                data: {
+                                    _id: obj.data._id
+                                },
+                                success:function (data) {
+                                    if( data.code ===0 ){
+                                        obj.del()
+                                    }else if( data.code===1 ){
+                                        layer.alert(data.msg)
+                                    }
+                                }
+                            }),
+                            layer.close(index);
+                        });
+
+                    } else if(obj.event === 'edit') {
+                        layer.prompt(function(value, index, elem){
+                            // alert(value); //得到value
+                            $.ajax({
+                                url: '/admin/user/relevel',
+                                method:'post',
+                                data:{
+                                    _id:obj.data._id,
+                                    level:value
+                                },
+                                success:function (data) {
+                                    layer.alert(data.msg,function () {
+                                            location.reload()
+                                    })
+                                }
+                            })
+                            layer.close(index);
+                        });
+
+                    }
+                });
+                form.on('switch(usedDemo)', function(obj){
+                    // console.log(this.value, obj.elem.checked);
+                    layui.$.ajax({
+                        url: '/admin/user/reused',
+                        method: 'post',
+                        data: {
+                            user_id: this.value,
+                            used: obj.elem.checked
+                        },
+                        success: function (res) {
+                            res.code === 0 && layer.tips(res.data, obj.othis);
+                            res.code === 1 && layer.alert(res.data, function () {
+                                window.location.reload()
+                            })
+                        }
+                    })
+                });
+
+            });
+        });
+    </script>
+</body>
+</html>

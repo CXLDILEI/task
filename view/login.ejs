@@ -1,0 +1,68 @@
+<% include header.ejs%>
+<body>
+    <%if( login ){%>
+        已登录
+    <%}else {%>
+
+    <form class="layui-form form" action="">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+            <legend>登录</legend>
+        </fieldset>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户名</label>
+            <div class="layui-input-inline">
+                <input type="text" name="username" required  lay-verify="required" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">密码框</label>
+            <div class="layui-input-inline">
+                <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
+            </div>
+            <div class="layui-form-mid layui-word-aux">6-12位数</div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="formDemo">登录</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+    <% } %>
+    <script>
+        //Demo
+        layui.use('form', function(){
+            var form = layui.form;
+            var $ = layui.$;
+
+            //监听提交
+            form.on('submit(formDemo)', function(data){
+                // layer.msg(JSON.stringify(data.field));
+                // console.log(data.field);
+                $.ajax({
+                    url: '/login',
+                    method: 'post',
+                    data: {
+                        username: data.field.username,
+                        password: data.field.password
+                    },
+                    success: function (data) {
+                        if( data.code===0 ){
+                            layer.alert(data.msg,function () {
+                                location.href='/'
+                            })
+                        }else {
+                            layer.open({
+                                title: '错误'
+                                ,content: data.msg
+                            });
+                        }
+                    }
+                })
+                return false;
+            });
+        });
+    </script>
+
+</body>
+</html>

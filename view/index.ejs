@@ -1,0 +1,113 @@
+<% include header.ejs %>
+<body>
+
+    <div class="layui-bg-green">
+        <div class="layui-header layui-main">
+            <ul class="layui-nav layui-bg-green">
+                <li class="layui-nav-item layui-this"><a href="/">任务大厅</a></li>
+            </ul>
+            <ul class="layui-nav layui-bg-green layui-layout-right ">
+                <% if (login){ %>
+                    <li class="layui-nav-item">当前用户: <%- user.username %></li>
+
+                    <% if (user.level >= 10) { %>
+                        <li class="layui-nav-item"><a href="/admin/task/add">后台管理</a></li>
+                    <% } %>
+
+                    <li class="layui-nav-item"><a href="/logout">退出</a></li>
+                <% } else { %>
+                    <li class="layui-nav-item"><a href="/login">登陆</a></li>
+                    <li class="layui-nav-item"><a href="/reg">注册</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div id="buts"style="margin-top: 10px">
+        <button class="layui-btn" data-task="all">全部任务</button>
+        <button class="layui-btn" data-task="can">可接取任务</button>
+        <button class="layui-btn" data-task="cant">不可接取任务</button>
+        <div style="float: right">
+            <% if(login){%>
+            <%if(user.level>=10){%>
+                <button class="layui-btn" data-task="publish">我的发布</button>
+            <%}%>
+            <button class="layui-btn" data-task="receive">我接取的</button>
+            <button class="layui-btn" data-task="accomplish">已经完成的</button>
+            <% }%>
+        </div>
+    </div>
+    <table id="dome" lay-filter="demo"></table>
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn layui-btn-xs" lay-event="xq">详情</a>
+    </script>
+
+    <script>
+        //注意：导航 依赖 element 模块，否则无法进行功能性操作
+        layui.use(['element', 'table', 'form'], function(){
+            var table = layui.table;
+            var $ = layui.$;
+            table.render({
+                elem:'#dome',
+                url:'/api/task/all',
+                method:'post',
+                page: true, //开启分页
+                cols:[[
+                    {field: 'title', title: '标题', width:100,fixed: 'left'},
+                    {field: 'author', title: '作者',width:100,  fixed: 'left',templet:function (d) {
+                            return  d.author.username?d.author.username:d.username
+                        }},
+                    {field: 'time', title: '发布时间', width:120, fixed: 'left',templet:function (d) {
+                            return new Date(d.time).toLocaleDateString()
+                        }},
+                    {field: 'expiration', title: '截止时间', width:120, fixed: 'left'},
+                    {field: 'content', title: '内容', width:120, fixed: 'left'},
+                    {field: 'num', title: '可接人数', width:120, fixed: 'left'},
+                    {field: 'reward', title: '奖励', width:120, fixed: 'left'},
+                    {field: 'difficulty', title: '难度', width:80, fixed: 'left'},
+                    {field: 'tool', toolbar: '#barDemo',width:80}
+                ]]
+            });
+            table.on('tool(demo)',function (obj) {
+                location.href='/xq/'+obj.data._id;
+            })
+            var f = {
+                all:function () {
+                    table.reload('dome',{
+                        url:'/api/task/all',
+                    })
+                },
+                can:function () {
+                    table.reload('dome',{
+                        url:'/api/task/can',
+                    })
+                },
+                cant:function () {
+                    table.reload('dome',{
+                        url:'/api/task/cant',
+                    })
+                },
+                publish:function () {
+                    table.reload('dome',{
+                        url:'/api/task/publish',
+                    })
+                },
+                receive:function () {
+                    table.reload('dome',{
+                        url:'/api/task/receive',
+                    })
+                },
+                accomplish:function () {
+                    table.reload('dome',{
+                        url:'/api/task/accomplish',
+                    })
+                }
+            }
+            $('#buts .layui-btn').on('click',function () {
+                f[this.dataset.task]()
+            });
+
+        });
+    </script>
+
+</body>
+</html>

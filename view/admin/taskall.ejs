@@ -1,0 +1,71 @@
+<% include ../header.ejs %>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <%include ./nav.ejs%>
+        <div class="layui-body">
+            <!-- 内容主体区域 -->
+            <div style="padding: 15px;">
+                <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                    <legend>任务管理</legend>
+                </fieldset>
+
+                <table id="dome" lay-filter="demo"></table>
+                <script type="text/html" id="barDemo">
+                    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除任务</a>
+                </script>
+            </div>
+        </div>
+
+
+    </div>
+    <script src="../public/layui/layui.js"></script>
+    <script>
+        //JavaScript代码区域
+        layui.use(['element', 'table', 'form'], function(){
+            var table = layui.table;
+            var $ = layui.$;
+
+            table.render({
+                elem:'#dome',
+                url:'/api/task/all',
+                method:'post',
+                page: true, //开启分页
+                cols:[[
+                    {field: 'title', title: '标题', width:100,fixed: 'left'},
+                    {field: 'author', title: '作者',width:100,  fixed: 'left',templet:function (d) {
+                            return  d.author.username?d.author.username:d.username
+                        }},
+                    {field: 'time', title: '发布时间', width:120, fixed: 'left',templet:function (d) {
+                            return new Date(d.time).toLocaleDateString()
+                        }},
+                    {field: 'expiration', title: '截止时间', width:120, fixed: 'left'},
+                    {field: 'content', title: '内容', width:120, fixed: 'left'},
+                    {field: 'num', title: '可接人数', width:120, fixed: 'left'},
+                    {field: 'reward', title: '奖励', width:120, fixed: 'left'},
+                    {field: 'difficulty', title: '难度', width:80, fixed: 'left'},
+                    {field: 'tool', toolbar: '#barDemo',width:100}
+                ]]
+            });
+            table.on('tool(demo)', function (obj) {
+                layer.confirm('是否删除任务?', {icon: 3, title:'提示'}, function(index){
+                    //do something
+                    $.ajax({
+                        url: '/admin/task/del',
+                        method: 'post',
+                        data: {
+                            _id: obj.data._id
+                        },
+                        success:function (data) {
+                            if( data.code===0 ){
+                                obj.del()
+                            }
+                            layer.alert(data.msg)
+                        }
+                    }),
+                    layer.close(index);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

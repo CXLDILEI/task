@@ -1,0 +1,31 @@
+<div class="layui-header">
+    <!--<div class="layui-logo">layui 后台布局</div>-->
+    <!-- 头部区域（可配合layui已有的水平导航） -->
+    <ul class="layui-nav layui-layout-right">
+        <li class="layui-nav-item">
+            <a href="javascript:;">
+                <img src="http://images2015.cnblogs.com/news/66372/201612/66372-20161231204333070-1275058140.png" class="layui-nav-img">
+                <%-user.username%>
+            </a>
+            <dl class="layui-nav-child">
+                <dd><a href="/admin/resetpassword">修改密码</a></dd>
+            </dl>
+        </li>
+        <li class="layui-nav-item"><a href="/">返回首页</a></li>
+    </ul>
+</div>
+<div class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <ul class="layui-nav layui-nav-tree"  lay-filter="test">
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">管理</a>
+                <dl class="layui-nav-child">
+                    <dd><a href="/admin/user">用户管理</a></dd>
+                    <dd><a href="/admin/task/add">任务发布</a></dd>
+                    <dd><a href="/admin/task/all">任务管理</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+</div>

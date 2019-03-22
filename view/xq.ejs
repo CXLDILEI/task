@@ -1,0 +1,129 @@
+<% include header.ejs %>
+<body>
+    <div class="layui-bg-green">
+        <div class="layui-header layui-main">
+            <ul class="layui-nav layui-bg-green">
+                <li class="layui-nav-item layui-this"><a href="/">任务大厅</a></li>
+            </ul>
+            <ul class="layui-nav layui-bg-green layui-layout-right ">
+                <% if (login){ %>
+                    <li class="layui-nav-item">当前用户: <%- user.username %></li>
+
+                    <% if (user.level >= 10) { %>
+                        <li class="layui-nav-item"><a href="/admin/task/add">后台管理</a></li>
+                    <% } %>
+
+                    <li class="layui-nav-item"><a href="/logout">退出</a></li>
+                <% } else { %>
+                    <li class="layui-nav-item"><a href="/login">登陆</a></li>
+                    <li class="layui-nav-item"><a href="/reg">注册</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div class="layui-main">
+        <h1><%-data.title%></h1>
+        <div class="layui-text layui-row">
+            <div class="layui-col-md1">发布人：<%-data.author.username%></div>
+            <div>发布时间：<%- new Date(data.time).toLocaleString()%></div>
+        </div>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>任务详情</legend>
+        </fieldset>
+
+        <div>
+            <%-data.content%>
+        </div>
+        <div>
+            接取人数：<%- data.receiver.length%>人
+            最高接取人数：<%- data.num%>人
+            任务限时：<%- data.expiration%>之前
+            任务难度：<div id="difficulty"></div>
+        </div>
+        <div>
+            <%if(data.finish ||!( a ==-1 )||(!login)|| m==-1||(data.receiver.length==data.num)){%>
+                <button class="layui-btn layui-btn-normal layui-btn-disabled">不能接取</button>
+            <%}else {%>
+                    <button id="ljjq" class="layui-btn layui-btn-normal">立即接取</button>
+            <%}%>
+        </div>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>接取人</legend>
+        </fieldset>
+        <div>
+            <% for (var i = 0; i < data.receiver.length; i++) {%>
+               <%- `${i+1}.${data.receiver[i].user.username}`%>
+            <%}%>
+        </div>
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>完成详情</legend>
+        </fieldset>
+        <% for (var i = 0; i < data.receiver.length; i++) {%>
+            <div class="layui-card-header">用户名<%- data.receiver[i].user.username%></div>
+            <%if( data.receiver[i].finmsg ){%>
+                <div class="layui-card-body"><%-data.receiver[i].msg%></div>
+            <%}else {%>
+                <%if(user && user._id == data.receiver[i].user._id){%>
+                    <form class="layui-form" action="">
+                        <input type="text" name="id" hidden value="<%-data.receiver[i].user._id%>">
+                        <input type="text" name="index" hidden value="<%- i%>">
+                        <textarea name="msg" id="demo<%- i%>" style="display: none;"></textarea>
+                        <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                    </form>
+
+                <%}%>
+            <%}%>
+        <%}%>
+
+    </div>
+
+    <script>
+        //注意：导航 依赖 element 模块，否则无法进行功能性操作
+        layui.use(['element', 'table', 'form','rate','layedit'], function(){
+            var rate = layui.rate;
+            var $= layui.$;
+            var form = layui.form;
+            var edit = {};
+            var layedit = layui.layedit;
+
+            <%for(var i=0;i<data.receiver.length;i++){%>
+                edit.index<%- i%> =layedit.build('demo<%- i%>');//建立编辑器
+            <%}%>
+            form.on('submit(formDemo)', function(data){
+                var da = data.field;
+                da.msg = layedit.getContent(edit['index'+data.field.index]);
+                da.taskid = location.pathname;
+                $.ajax({
+                    url:'/task/finmsg',
+                    method:'post',
+                    data:da,
+                    success:function (data) {
+                        if( data.code===0 ){
+                            location.reload()
+                        }
+                    }
+                })
+                return false;
+            });
+            rate.render({
+                elem:'#difficulty',
+                value:<%-data.difficulty%>,
+                readonly:true,
+            });
+            $('#ljjq').on('click',function () {
+                $.ajax({
+                    url:location.pathname,
+                    method:'post',
+                    success:function (data) {
+                        if( data.code===0 ){
+                            location.reload()
+                        }
+                    }
+                })
+            });
+
+        });
+    </script>
+
+</body>
+</html>
